@@ -1,6 +1,8 @@
-// Load .env file if present (dev convenience — no-op in production where env vars are set externally)
-try { process.loadEnvFile() } catch {}
-
+// HTTP MCP server — full admin access (shows + analytics + file/user management).
+// Exposes POST /mcp using MCP Streamable HTTP transport.
+// Requires Authorization: Bearer <MCP_API_KEY> on every request.
+// Intended for network clients (e.g. powerfm-agent). For Claude Desktop use server-admin.ts (stdio).
+import './env.js'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
 import { createMcpExpressApp } from '@modelcontextprotocol/sdk/server/express.js'

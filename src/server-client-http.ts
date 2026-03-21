@@ -1,6 +1,8 @@
-// Load .env file if present (dev convenience — no-op in production where env vars are set externally)
-try { process.loadEnvFile() } catch {}
-
+// HTTP MCP server — read-only access (shows, schedule, stream state only).
+// Exposes POST /mcp using MCP Streamable HTTP transport.
+// Requires Authorization: Bearer <MCP_API_KEY> on every request.
+// Intended for network clients. For Claude Desktop use server-client.ts (stdio).
+import './env.js'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
 import { createMcpExpressApp } from '@modelcontextprotocol/sdk/server/express.js'
@@ -26,6 +28,8 @@ app.use('/mcp', (req, res, next) => {
   next()
 })
 
+// Stateless transport — a fresh McpServer per request keeps things simple
+// and avoids session management complexity for now
 app.post('/mcp', async (req, res) => {
   const server = new McpServer({ name: 'libretime-mcp-client', version: '0.1.0' })
   registerShows(server)
