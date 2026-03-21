@@ -12,38 +12,46 @@ The LibreTime OpenAPI spec lives in `schema.yml` — use it as the source of tru
 
 ## Architecture
 
-Two separate server entry points, both using stdio transport (compatible with Claude Desktop and MCP clients that spawn a subprocess):
+Four server entry points — stdio variants for Claude Desktop subprocess mode, HTTP variants for network access with API key auth:
 
-| Entry point | Name | Tools included |
-|---|---|---|
-| `src/server-client.ts` | `libretime-mcp-client` | Shows, schedule, stream state (read-only) |
-| `src/server-admin.ts` | `libretime-mcp-admin` | All client tools + analytics + admin (files, users, hosts) |
+| Entry point | Transport | Name | Tools |
+|---|---|---|---|
+| `src/server-client.ts` | stdio | `libretime-mcp-client` | Shows, schedule, stream state (read-only) |
+| `src/server-admin.ts` | stdio | `libretime-mcp-admin` | All client tools + analytics + admin |
+| `src/server-client-http.ts` | HTTP (port 3001) | `libretime-mcp-client` | Shows, schedule, stream state (read-only) |
+| `src/server-admin-http.ts` | HTTP (port 3000) | `libretime-mcp-admin` | All client tools + analytics + admin |
 
-Use `server-client` for public-facing or lower-trust contexts. Use `server-admin` when the user needs full control.
+The HTTP servers expose a single `POST /mcp` endpoint using MCP Streamable HTTP transport. All requests require `Authorization: Bearer <MCP_API_KEY>`.
+
+Use stdio for local Claude Desktop. Use HTTP when you need to call the server over the network (e.g. from powerfm-agent or other clients).
 
 ## File Structure
 
 ```
 libretime-mcp/
-├── schema.yml                  ← LibreTime OpenAPI spec (reference when building tools)
+├── schema.yml                       ← LibreTime OpenAPI spec (reference when building tools)
 ├── package.json
 ├── tsconfig.json
 └── src/
-    ├── server-client.ts        ← Read-only MCP server entry point
-    ├── server-admin.ts         ← Full-access MCP server entry point
-    ├── libretime.ts            ← HTTP client (Basic Auth): libreGet, librePost, librePatch, libreDelete, libreUpload
+    ├── server-client.ts             ← Read-only MCP server (stdio)
+    ├── server-admin.ts              ← Full-access MCP server (stdio)
+    ├── server-client-http.ts        ← Read-only MCP server (HTTP, port 3001)
+    ├── server-admin-http.ts         ← Full-access MCP server (HTTP, port 3000)
+    ├── libretime.ts                 ← HTTP client (Basic Auth): libreGet, librePost, librePatch, libreDelete, libreUpload
     └── tools/
-        ├── shows.ts            ← get_shows, get_schedule, get_stream_state
-        ├── analytics.ts        ← get_listener_counts, get_playout_history
-        └── admin.ts            ← search_files, upload_file, update_file_metadata, delete_file, get_users, get_hosts
+        ├── shows.ts                 ← get_shows, get_schedule, get_stream_state
+        ├── analytics.ts             ← get_listener_counts, get_playout_history
+        └── admin.ts                 ← search_files, upload_file, update_file_metadata, delete_file, get_users, get_hosts
 ```
 
 ## Commands
 
 ```bash
 # Dev (runs with tsx watch, restarts on save)
-npm run dev:client       # read-only server
-npm run dev:admin        # full-access server
+npm run dev:client          # read-only server (stdio)
+npm run dev:admin           # full-access server (stdio)
+npm run dev:client-http     # read-only server (HTTP, port 3001)
+npm run dev:admin-http      # full-access server (HTTP, port 3000)
 
 # Build TypeScript → dist/
 npm run build
@@ -51,6 +59,11 @@ npm run build
 # Run built output
 npm run start:client
 npm run start:admin
+npm run start:client-http
+npm run start:admin-http
+
+# Generate a random API key
+npm run generate:key
 ```
 
 ## Environment Variables
@@ -59,9 +72,13 @@ npm run start:admin
 LIBRETIME_URL=https://your-libretime-instance.example.com
 LIBRETIME_USER=your_api_username
 LIBRETIME_PASS=your_api_password
+
+# Required for HTTP servers only
+MCP_API_KEY=your_secret_api_key
+MCP_PORT=3000   # optional, defaults to 3000 (admin) or 3001 (client)
 ```
 
-All three are required. The HTTP client reads them at startup from `src/libretime.ts`.
+Generate a key: `npm run generate:key`
 
 ## Using with Claude Desktop
 
