@@ -7,9 +7,9 @@ const authHeader = 'Basic ' + Buffer.from(`${USER}:${PASS}`).toString('base64')
 
 /**
  * Make an authenticated GET request to the LibreTime API.
- * Returns the parsed JSON response.
+ * Returns the parsed JSON response as unknown — callers are responsible for validation.
  */
-export async function libreGet<T>(path: string, params?: Record<string, string>): Promise<T> {
+export async function libreGet(path: string, params?: Record<string, string>): Promise<unknown> {
   const url = new URL(path, BASE_URL)
 
   if (params) {
@@ -29,14 +29,14 @@ export async function libreGet<T>(path: string, params?: Record<string, string>)
     throw new Error(`LibreTime API error: ${response.status} ${response.statusText} — ${url.toString()}`)
   }
 
-  return response.json() as Promise<T>
+  return response.json()
 }
 
 /**
  * Make an authenticated POST request to the LibreTime API with a JSON body.
- * Returns the parsed JSON response.
+ * Returns the parsed JSON response as unknown — callers are responsible for validation.
  */
-export async function librePost<T>(path: string, body: Record<string, unknown>): Promise<T> {
+export async function librePost(path: string, body: Record<string, unknown>): Promise<unknown> {
   const url = new URL(path, BASE_URL)
 
   const response = await fetch(url.toString(), {
@@ -53,14 +53,14 @@ export async function librePost<T>(path: string, body: Record<string, unknown>):
     throw new Error(`LibreTime API error: ${response.status} ${response.statusText} — ${url.toString()}`)
   }
 
-  return response.json() as Promise<T>
+  return response.json()
 }
 
 /**
  * Make an authenticated multipart POST request to the LibreTime API.
- * Used for file uploads. Returns the parsed JSON response.
+ * Used for file uploads. Returns the parsed JSON response as unknown.
  */
-export async function libreUpload<T>(path: string, formData: FormData): Promise<T> {
+export async function libreUpload(path: string, formData: FormData): Promise<unknown> {
   const url = new URL(path, BASE_URL)
 
   const response = await fetch(url.toString(), {
@@ -78,14 +78,14 @@ export async function libreUpload<T>(path: string, formData: FormData): Promise<
     throw new Error(`LibreTime API error: ${response.status} ${response.statusText} — ${url.toString()}`)
   }
 
-  return response.json() as Promise<T>
+  return response.json()
 }
 
 /**
  * Make an authenticated PATCH request to the LibreTime API with a JSON body.
- * Returns the parsed JSON response.
+ * Returns the parsed JSON response as unknown — callers are responsible for validation.
  */
-export async function librePatch<T>(path: string, body: Record<string, unknown>): Promise<T> {
+export async function librePatch(path: string, body: Record<string, unknown>): Promise<unknown> {
   const url = new URL(path, BASE_URL)
 
   const response = await fetch(url.toString(), {
@@ -102,7 +102,7 @@ export async function librePatch<T>(path: string, body: Record<string, unknown>)
     throw new Error(`LibreTime API error: ${response.status} ${response.statusText} — ${url.toString()}`)
   }
 
-  return response.json() as Promise<T>
+  return response.json()
 }
 
 /**

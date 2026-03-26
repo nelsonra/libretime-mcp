@@ -4,16 +4,18 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev:client": "tsx watch src/server-client.ts",
-    "dev:admin": "tsx watch src/server-admin.ts",
-    "dev:client-http": "tsx watch src/server-client-http.ts",
-    "dev:admin-http": "tsx watch src/server-admin-http.ts",
+    "dev:client": "tsx --env-file=.env watch src/stdio/client.ts",
+    "dev:admin": "tsx --env-file=.env watch src/stdio/admin.ts",
+    "dev:client-http": "tsx --env-file=.env watch src/http/client.ts",
+    "dev:admin-http": "tsx --env-file=.env watch src/http/admin.ts",
     "build": "tsc",
-    "start:client": "node dist/server-client.js",
-    "start:admin": "node dist/server-admin.js",
-    "start:client-http": "node dist/server-client-http.js",
-    "start:admin-http": "node dist/server-admin-http.js",
-    "generate:key": "node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\""
+    "start:client": "node --env-file=.env dist/stdio/client.js",
+    "start:admin": "node --env-file=.env dist/stdio/admin.js",
+    "start:client-http": "node --env-file=.env dist/http/client.js",
+    "start:admin-http": "node --env-file=.env dist/http/admin.js",
+    "generate:key": "node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
@@ -24,6 +26,7 @@
     "@types/express": "~5.0.6",
     "@types/node": "^22.0.0",
     "tsx": "^4.19.0",
-    "typescript": "^5.6.0"
+    "typescript": "^5.6.0",
+    "vitest": "~4.1.1"
   }
 }

@@ -6,16 +6,18 @@ A [Model Context Protocol](https://modelcontextprotocol.io) server that connects
 
 Two access levels, each available in stdio and HTTP flavors:
 
-| Server | Transport | Tools |
+| Entry point | Transport | Tools |
 |---|---|---|
-| `server-client` | stdio | Shows, schedule, stream state (read-only) |
-| `server-admin` | stdio | All client tools + analytics + file/user management |
-| `server-client-http` | HTTP :3001 | Same as client, over the network |
-| `server-admin-http` | HTTP :3000 | Same as admin, over the network |
+| `src/stdio/client.ts` | stdio | Shows, schedule, stream state (read-only) |
+| `src/stdio/admin.ts` | stdio | All client tools + analytics + file/user management |
+| `src/http/client.ts` | HTTP :3001 | Same as client, over the network |
+| `src/http/admin.ts` | HTTP :3000 | Same as admin, over the network |
 
-Use **stdio** for Claude Desktop (subprocess only — Desktop does not support HTTP MCP servers). Use **HTTP** when calling from a remote client or another service.
+Use **stdio** for Claude Desktop. Use **HTTP** for server-to-server integrations (e.g. an AI agent or backend service calling over the network).
 
 ## Tools
+
+Tools are organised into subdirectories under `src/tools/` — one file per tool.
 
 | Tool | Server | Description |
 |---|---|---|
@@ -29,7 +31,7 @@ Use **stdio** for Claude Desktop (subprocess only — Desktop does not support H
 | `update_file_metadata` | admin | Edit metadata for a file |
 | `delete_file` | admin | Delete a file from the library |
 | `get_users` | admin | List station users |
-| `get_hosts` | admin | List show hosts |
+| `get_hosts` | admin | List show hosts with enriched user details |
 
 ## Setup
 
@@ -73,11 +75,14 @@ npm run start:client
 npm run start:admin
 npm run start:client-http
 npm run start:admin-http
+
+# Tests
+npm test
 ```
 
-## Using with Claude Desktop
+## Using with Claude Desktop (stdio)
 
-Claude Desktop only supports stdio (subprocess) — HTTP MCP servers are not supported. Claude Desktop spawns the server as a subprocess and manages its lifecycle.
+Claude Desktop spawns the server as a subprocess and manages its lifecycle — nothing extra to run.
 
 Add to your `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
@@ -86,7 +91,7 @@ Add to your `~/Library/Application Support/Claude/claude_desktop_config.json`:
   "mcpServers": {
     "libretime": {
       "command": "npx",
-      "args": ["tsx", "/absolute/path/to/libretime-mcp/src/server-admin.ts"],
+      "args": ["tsx", "/absolute/path/to/libretime-mcp/src/stdio/admin.ts"],
       "env": {
         "LIBRETIME_URL": "https://your-instance.example.com",
         "LIBRETIME_USER": "user",
@@ -103,10 +108,19 @@ Or point at the built output (`npm run build` first):
 
 ```json
 "command": "node",
-"args": ["/absolute/path/to/libretime-mcp/dist/server-admin.js"]
+"args": ["/absolute/path/to/libretime-mcp/dist/stdio/admin.js"]
 ```
 
-## Using the HTTP Server from Other Clients
+## Using the HTTP Server (server-to-server)
+
+The HTTP servers are designed for network clients — e.g. an AI agent or backend service calling LibreTime tools over the network. Claude Desktop does not support HTTP MCP servers directly; use stdio above for Desktop.
+
+Start the server:
+
+```bash
+npm run start:admin-http   # full access, port 3000
+npm run start:client-http  # read-only, port 3001
+```
 
 All requests must go to `POST /mcp` with the API key header:
 

@@ -1,15 +1,17 @@
 // HTTP MCP server — full admin access (shows + analytics + file/user management).
 // Exposes POST /mcp using MCP Streamable HTTP transport.
 // Requires Authorization: Bearer <MCP_API_KEY> on every request.
-// Intended for network clients (e.g. powerfm-agent). For Claude Desktop use server-admin.ts (stdio).
-import './env.js'
+// Intended for network clients (e.g. powerfm-agent). For Claude Desktop use stdio/admin.ts.
+import { createRequire } from 'module'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
 import { createMcpExpressApp } from '@modelcontextprotocol/sdk/server/express.js'
 
-import { register as registerShows } from './tools/shows.js'
-import { register as registerAnalytics } from './tools/analytics.js'
-import { register as registerAdmin } from './tools/admin.js'
+const { version } = createRequire(import.meta.url)('../../package.json')
+
+import { register as registerShows } from '../tools/shows/index.js'
+import { register as registerAnalytics } from '../tools/analytics/index.js'
+import { register as registerAdmin } from '../tools/admin/index.js'
 
 const PORT = parseInt(process.env.MCP_PORT ?? '3000', 10)
 const API_KEY = process.env.MCP_API_KEY
@@ -34,7 +36,7 @@ app.use('/mcp', (req, res, next) => {
 // Stateless transport — a fresh McpServer per request keeps things simple
 // and avoids session management complexity for now
 app.post('/mcp', async (req, res) => {
-  const server = new McpServer({ name: 'libretime-mcp-admin', version: '0.1.0' })
+  const server = new McpServer({ name: 'libretime-mcp-admin', version })
   registerShows(server)
   registerAnalytics(server)
   registerAdmin(server)

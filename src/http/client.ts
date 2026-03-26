@@ -1,12 +1,14 @@
 // HTTP MCP server — read-only access (shows, schedule, stream state only).
 // Exposes POST /mcp using MCP Streamable HTTP transport.
 // Requires Authorization: Bearer <MCP_API_KEY> on every request.
-// Intended for network clients. For Claude Desktop use server-client.ts (stdio).
-import './env.js'
+// Intended for network clients. For Claude Desktop use stdio/client.ts.
+import { createRequire } from 'module'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
 import { createMcpExpressApp } from '@modelcontextprotocol/sdk/server/express.js'
-import { register as registerShows } from './tools/shows.js'
+import { register as registerShows } from '../tools/shows/index.js'
+
+const { version } = createRequire(import.meta.url)('../../package.json')
 
 const PORT = parseInt(process.env.MCP_PORT ?? '3001', 10)
 const API_KEY = process.env.MCP_API_KEY
@@ -31,7 +33,7 @@ app.use('/mcp', (req, res, next) => {
 // Stateless transport — a fresh McpServer per request keeps things simple
 // and avoids session management complexity for now
 app.post('/mcp', async (req, res) => {
-  const server = new McpServer({ name: 'libretime-mcp-client', version: '0.1.0' })
+  const server = new McpServer({ name: 'libretime-mcp-client', version })
   registerShows(server)
 
   const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined })

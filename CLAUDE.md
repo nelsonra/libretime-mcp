@@ -16,10 +16,10 @@ Four server entry points — stdio variants for Claude Desktop subprocess mode, 
 
 | Entry point | Transport | Name | Tools |
 |---|---|---|---|
-| `src/server-client.ts` | stdio | `libretime-mcp-client` | Shows, schedule, stream state (read-only) |
-| `src/server-admin.ts` | stdio | `libretime-mcp-admin` | All client tools + analytics + admin |
-| `src/server-client-http.ts` | HTTP (port 3001) | `libretime-mcp-client` | Shows, schedule, stream state (read-only) |
-| `src/server-admin-http.ts` | HTTP (port 3000) | `libretime-mcp-admin` | All client tools + analytics + admin |
+| `src/stdio/client.ts` | stdio | `libretime-mcp-client` | Shows, schedule, stream state (read-only) |
+| `src/stdio/admin.ts` | stdio | `libretime-mcp-admin` | All client tools + analytics + admin |
+| `src/http/client.ts` | HTTP (port 3001) | `libretime-mcp-client` | Shows, schedule, stream state (read-only) |
+| `src/http/admin.ts` | HTTP (port 3000) | `libretime-mcp-admin` | All client tools + analytics + admin |
 
 The HTTP servers expose a single `POST /mcp` endpoint using MCP Streamable HTTP transport. All requests require `Authorization: Bearer <MCP_API_KEY>`.
 
@@ -32,16 +32,43 @@ libretime-mcp/
 ├── schema.yml                       ← LibreTime OpenAPI spec (reference when building tools)
 ├── package.json
 ├── tsconfig.json
+├── vitest.config.ts
+├── tests/
+│   ├── helpers.ts                   ← createTestClient, parseResult, jsonResponse, blobResponse
+│   └── tools/
+│       ├── shows/                   ← mirrors src/tools/shows/
+│       ├── analytics/               ← mirrors src/tools/analytics/
+│       └── admin/                   ← mirrors src/tools/admin/
 └── src/
-    ├── server-client.ts             ← Read-only MCP server (stdio)
-    ├── server-admin.ts              ← Full-access MCP server (stdio)
-    ├── server-client-http.ts        ← Read-only MCP server (HTTP, port 3001)
-    ├── server-admin-http.ts         ← Full-access MCP server (HTTP, port 3000)
+    ├── stdio/
+    │   ├── client.ts                ← Read-only MCP server (stdio, for Claude Desktop)
+    │   └── admin.ts                 ← Full-access MCP server (stdio, for Claude Desktop)
+    ├── http/
+    │   ├── client.ts                ← Read-only MCP server (HTTP, port 3001)
+    │   └── admin.ts                 ← Full-access MCP server (HTTP, port 3000)
     ├── libretime.ts                 ← HTTP client (Basic Auth): libreGet, librePost, librePatch, libreDelete, libreUpload
+    ├── tool-response.ts             ← toolText() helper — wraps data in MCP content shape
     └── tools/
-        ├── shows.ts                 ← get_shows, get_schedule, get_stream_state
-        ├── analytics.ts             ← get_listener_counts, get_playout_history
-        └── admin.ts                 ← search_files, upload_file, update_file_metadata, delete_file, get_users, get_hosts
+        ├── shows/
+        │   ├── types.ts             ← Zod schemas: ShowSchema, ScheduleItemSchema, StreamStateSchema
+        │   ├── get_shows.ts
+        │   ├── get_schedule.ts
+        │   ├── get_stream_state.ts
+        │   └── index.ts             ← barrel: register(server) calls all three
+        ├── analytics/
+        │   ├── types.ts             ← Zod schemas: ListenerCountSchema, PlayoutHistorySchema, etc.
+        │   ├── get_listener_counts.ts
+        │   ├── get_playout_history.ts
+        │   └── index.ts
+        └── admin/
+            ├── types.ts             ← Zod schemas: LibreFileSchema, UserSchema, ShowHostSchema
+            ├── search_files.ts
+            ├── upload_file.ts
+            ├── update_file_metadata.ts
+            ├── delete_file.ts
+            ├── get_users.ts
+            ├── get_hosts.ts
+            └── index.ts
 ```
 
 ## Commands
@@ -61,6 +88,10 @@ npm run start:client
 npm run start:admin
 npm run start:client-http
 npm run start:admin-http
+
+# Tests (Vitest)
+npm test
+npm run test:watch
 
 # Generate a random API key
 npm run generate:key
@@ -89,7 +120,7 @@ Add one of the following to your `claude_desktop_config.json`:
   "mcpServers": {
     "libretime": {
       "command": "npx",
-      "args": ["tsx", "/absolute/path/to/libretime-mcp/src/server-client.ts"],
+      "args": ["tsx", "/absolute/path/to/libretime-mcp/src/stdio/client.ts"],
       "env": {
         "LIBRETIME_URL": "https://your-instance.example.com",
         "LIBRETIME_USER": "user",
@@ -100,14 +131,17 @@ Add one of the following to your `claude_desktop_config.json`:
 }
 ```
 
-Or use the built output (`node dist/server-client.js`) if you've run `npm run build`.
+Or use the built output (`node dist/stdio/client.js`) if you've run `npm run build`.
 
 ## Adding New Tools
 
 1. Check `schema.yml` for the endpoint shape and available query params.
-2. Add the type and `registerTool` call to the appropriate file in `src/tools/`.
-3. Import and register it in `server-client.ts` and/or `server-admin.ts` depending on access level.
-4. The `libreGet` / `librePost` / `librePatch` / `libreDelete` helpers in `libretime.ts` cover all HTTP methods — use them rather than calling `fetch` directly.
+2. Create a new file in the appropriate `src/tools/<category>/` subdirectory. Each file exports one `register(server: McpServer)` function.
+3. Add a Zod schema for the response shape in the category's `types.ts`. Use `z.infer<typeof Schema>` to derive the TypeScript type — no duplication.
+4. Call `libreGet` / `librePost` / `librePatch` / `libreDelete` from `libretime.ts` — all return `Promise<unknown>`, so always validate with Zod before using the result.
+5. Return `toolText(data)` from `tool-response.ts` — wraps data in the MCP content shape.
+6. Register the new tool in the category's `index.ts` barrel, then wire it up in `stdio/client.ts` and/or `stdio/admin.ts` (and their `http/` counterparts) based on access level.
+7. Add a matching test file under `tests/tools/<category>/` mirroring the source path.
 
 ## Current Tools
 
