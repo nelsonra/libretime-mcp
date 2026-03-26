@@ -1,8 +1,20 @@
 {
-  "name": "@powerfm/libretime-mcp-server",
+  "name": "@powerfm/libretime-mcp",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
   "type": "module",
+  "description": "MCP server for LibreTime radio station — connect Claude to your broadcast schedule, media library, and analytics",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nelsonra/libretime-mcp.git"
+  },
+  "bin": {
+    "libretime-mcp": "dist/stdio/admin.js"
+  },
+  "files": [
+    "dist/",
+    "README.md"
+  ],
   "scripts": {
     "dev:client": "tsx --env-file=.env watch src/stdio/client.ts",
     "dev:admin": "tsx --env-file=.env watch src/stdio/admin.ts",

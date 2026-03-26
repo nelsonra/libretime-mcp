@@ -36,6 +36,18 @@ Tools are organised into subdirectories under `src/tools/` — one file per tool
 ## Setup
 
 ```bash
+npm install @powerfm/libretime-mcp
+```
+
+Or run without installing:
+
+```bash
+npx @powerfm/libretime-mcp
+```
+
+If you're working from source:
+
+```bash
 npm install
 ```
 
