@@ -1,6 +1,6 @@
 {
   "name": "@powerfm/libretime-mcp",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "private": false,
   "type": "module",
   "description": "MCP server for LibreTime radio station — connect Claude to your broadcast schedule, media library, and analytics",
