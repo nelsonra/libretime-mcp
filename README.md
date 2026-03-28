@@ -2,108 +2,50 @@
 
 A [Model Context Protocol](https://modelcontextprotocol.io) server that connects Claude (or any MCP-compatible AI client) to a [LibreTime](https://libretime.org) radio station via its REST API. Ask Claude to check your schedule, manage files, pull listener stats, and more — directly from your station.
 
-## Servers
-
-Two access levels, each available in stdio and HTTP flavors:
-
-| Entry point | Transport | Tools |
-|---|---|---|
-| `src/stdio/client.ts` | stdio | Shows, schedule, stream state (read-only) |
-| `src/stdio/admin.ts` | stdio | All client tools + analytics + file/user management |
-| `src/http/client.ts` | HTTP :3001 | Same as client, over the network |
-| `src/http/admin.ts` | HTTP :3000 | Same as admin, over the network |
-
-Use **stdio** for Claude Desktop. Use **HTTP** for server-to-server integrations (e.g. an AI agent or backend service calling over the network).
+Two ways to run it:
+- **stdio** — Claude Desktop spawns it as a subprocess. No hosting required. Best if you just want AI tooling on your own machine.
+- **HTTP** — Self-host it as a network server. Best for advanced setups where you want to connect a remote MCP client or integrate with another service.
 
 ## Tools
 
 Tools are organised into subdirectories under `src/tools/` — one file per tool.
 
-| Tool | Server | Description |
-|---|---|---|
-| `get_shows` | both | List shows |
-| `get_schedule` | both | Fetch the broadcast schedule |
-| `get_stream_state` | both | Current stream/on-air state |
-| `get_listener_counts` | admin | Listener stats by mount point |
-| `get_playout_history` | admin | Recent playout history with file metadata |
-| `search_files` | admin | Search the media library |
-| `upload_file` | admin | Upload an audio file |
-| `update_file_metadata` | admin | Edit metadata for a file |
-| `delete_file` | admin | Delete a file from the library |
-| `get_users` | admin | List station users |
-| `get_hosts` | admin | List show hosts with enriched user details |
+**Read-only (client & admin)**
+- `get_shows` — list all shows
+- `get_schedule` — broadcast schedule
+- `get_stream_state` — current on-air state
 
-## Setup
+**Analytics (admin)**
+- `get_listener_counts` — listener stats by mount point
+- `get_playout_history` — recent playout history with track metadata
 
+**Media library (admin)**
+- `search_files` — search your media library
+- `upload_file` — upload an audio file _(stdio only — reads from local filesystem)_
+- `update_file_metadata` — edit track metadata
+- `delete_file` — remove a file
+
+**Users (admin)**
+- `get_users` — list station users
+- `get_hosts` — list show hosts
+
+## Option 1 — Claude Desktop (stdio)
+
+No hosting required. Claude Desktop spawns the server as a subprocess and manages its lifecycle.
+
+**Install:**
 ```bash
-npm install @powerfm/libretime-mcp
+npm install -g @powerfm/libretime-mcp
 ```
 
-Or run without installing:
-
-```bash
-npx @powerfm/libretime-mcp
-```
-
-If you're working from source:
-
-```bash
-npm install
-```
-
-Copy and fill in your environment variables:
-
-```bash
-# LibreTime instance (required for all servers)
-LIBRETIME_URL=https://your-libretime-instance.example.com
-LIBRETIME_USER=your_api_username
-LIBRETIME_PASS=your_api_password
-
-# Required for HTTP servers only
-MCP_API_KEY=your_secret_api_key
-MCP_PORT=3000   # optional, defaults to 3000 (admin) / 3001 (client)
-```
-
-Generate a random API key:
-
-```bash
-npm run generate:key
-```
-
-## Commands
-
-```bash
-# Development (tsx watch — restarts on save)
-npm run dev:client          # read-only stdio server
-npm run dev:admin           # full-access stdio server
-npm run dev:client-http     # read-only HTTP server (port 3001)
-npm run dev:admin-http      # full-access HTTP server (port 3000)
-
-# Build TypeScript → dist/
-npm run build
-
-# Run built output
-npm run start:client
-npm run start:admin
-npm run start:client-http
-npm run start:admin-http
-
-# Tests
-npm test
-```
-
-## Using with Claude Desktop (stdio)
-
-Claude Desktop spawns the server as a subprocess and manages its lifecycle — nothing extra to run.
-
-Add to your `~/Library/Application Support/Claude/claude_desktop_config.json`:
+**Add to** `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 ```json
 {
   "mcpServers": {
     "libretime": {
-      "command": "npx",
-      "args": ["tsx", "/absolute/path/to/libretime-mcp/src/stdio/admin.ts"],
+      "command": "libretime-mcp",
+      "args": [],
       "env": {
         "LIBRETIME_URL": "https://your-instance.example.com",
         "LIBRETIME_USER": "user",
@@ -114,30 +56,91 @@ Add to your `~/Library/Application Support/Claude/claude_desktop_config.json`:
 }
 ```
 
-`npx tsx` resolves from the project's local `node_modules` — no global install needed as long as you've run `npm install` first.
+Use `libretime-mcp-client` instead of `libretime-mcp` for read-only access.
 
-Or point at the built output (`npm run build` first):
+Or run without installing (npx fetches on first use):
 
 ```json
-"command": "node",
-"args": ["/absolute/path/to/libretime-mcp/dist/stdio/admin.js"]
+{
+  "mcpServers": {
+    "libretime": {
+      "command": "npx",
+      "args": ["@powerfm/libretime-mcp"],
+      "env": {
+        "LIBRETIME_URL": "https://your-instance.example.com",
+        "LIBRETIME_USER": "user",
+        "LIBRETIME_PASS": "pass"
+      }
+    }
+  }
+}
 ```
 
-## Using the HTTP Server (server-to-server)
+## Option 2 — Self-hosted HTTP server
 
-The HTTP servers are designed for network clients — e.g. an AI agent or backend service calling LibreTime tools over the network. Claude Desktop does not support HTTP MCP servers directly; use stdio above for Desktop.
+Best for advanced setups — connect any MCP-compatible client over the network.
 
-Start the server:
-
+**Install:**
 ```bash
-npm run start:admin-http   # full access, port 3000
-npm run start:client-http  # read-only, port 3001
+npm install -g @powerfm/libretime-mcp
 ```
 
-All requests must go to `POST /mcp` with the API key header:
-
+**Set environment variables:**
+```bash
+LIBRETIME_URL=https://your-libretime-instance.example.com
+LIBRETIME_USER=your_api_username
+LIBRETIME_PASS=your_api_password
+MCP_API_KEY=your_secret_api_key     # clients must send this as a Bearer token
+MCP_PORT=3000                        # optional, defaults to 3000 (admin) / 3001 (client)
 ```
+
+Generate a random API key:
+```bash
+libretime-mcp-keygen
+```
+
+**Start the server:**
+```bash
+libretime-mcp-http           # full access, port 3000
+libretime-mcp-client-http    # read-only, port 3001
+```
+
+**Clients must send:**
+```
+POST /mcp
 Authorization: Bearer <MCP_API_KEY>
 ```
 
 Requests without a valid key receive `401 Unauthorized`.
+
+## Development
+
+```bash
+git clone https://github.com/nelsonra/libretime-mcp.git
+cd libretime-mcp
+npm install
+cp .env.example .env   # fill in your credentials
+```
+
+```bash
+# Dev (tsx watch — restarts on save)
+npm run dev:client          # read-only stdio
+npm run dev:admin           # full-access stdio
+npm run dev:client-http     # read-only HTTP (port 3001)
+npm run dev:admin-http      # full-access HTTP (port 3000)
+
+# Build
+npm run build
+
+# Tests
+npm test
+```
+
+## Servers
+
+| Command | Transport | Port | Access |
+|---|---|---|---|
+| `libretime-mcp` | stdio | — | Admin |
+| `libretime-mcp-client` | stdio | — | Read-only |
+| `libretime-mcp-http` | HTTP | 3000 | Admin |
+| `libretime-mcp-client-http` | HTTP | 3001 | Read-only |

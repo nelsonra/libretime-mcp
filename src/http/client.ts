@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 // HTTP MCP server — read-only access (shows, schedule, stream state only).
 // Exposes POST /mcp using MCP Streamable HTTP transport.
 // Requires Authorization: Bearer <MCP_API_KEY> on every request.

@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 // HTTP MCP server — full admin access (shows + analytics + file/user management).
 // Exposes POST /mcp using MCP Streamable HTTP transport.
 // Requires Authorization: Bearer <MCP_API_KEY> on every request.

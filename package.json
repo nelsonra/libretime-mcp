@@ -10,7 +10,10 @@
   },
   "bin": {
     "libretime-mcp": "dist/stdio/admin.js",
-    "libretime-mcp-client": "dist/stdio/client.js"
+    "libretime-mcp-client": "dist/stdio/client.js",
+    "libretime-mcp-http": "dist/http/admin.js",
+    "libretime-mcp-client-http": "dist/http/client.js",
+    "libretime-mcp-keygen": "dist/keygen.js"
   },
   "files": [
     "dist/",
