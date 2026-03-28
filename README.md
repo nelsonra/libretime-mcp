@@ -86,13 +86,16 @@ Clone the repo, create a `.env` file with your credentials (see [Development](#d
   "mcpServers": {
     "libretime": {
       "command": "node",
-      "args": ["/absolute/path/to/libretime-mcp/dist/stdio/admin.js"]
+      "args": ["/absolute/path/to/libretime-mcp/dist/stdio/admin.js"],
+      "env": {
+        "LIBRETIME_URL": "https://your-instance.example.com",
+        "LIBRETIME_USER": "user",
+        "LIBRETIME_PASS": "pass"
+      }
     }
   }
 }
 ```
-
-No `env` block needed — credentials are loaded automatically from `.env`.
 
 ## Option 2 — Self-hosted HTTP server
 

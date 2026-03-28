@@ -3,7 +3,6 @@
 // Exposes POST /mcp using MCP Streamable HTTP transport.
 // Requires Authorization: Bearer <MCP_API_KEY> on every request.
 // Intended for network clients (e.g. powerfm-agent). For Claude Desktop use stdio/admin.ts.
-import './env.js'
 import { createRequire } from 'module'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
