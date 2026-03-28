@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import './env.js'
 import { createRequire } from 'module'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'

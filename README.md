@@ -33,12 +33,13 @@ Tools are organised into subdirectories under `src/tools/` — one file per tool
 
 No hosting required. Claude Desktop spawns the server as a subprocess and manages its lifecycle.
 
-**Install:**
+### Global install
+
 ```bash
 npm install -g @powerfm/libretime-mcp
 ```
 
-**Add to** `~/Library/Application Support/Claude/claude_desktop_config.json`:
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 ```json
 {
@@ -58,7 +59,7 @@ npm install -g @powerfm/libretime-mcp
 
 Use `libretime-mcp-client` instead of `libretime-mcp` for read-only access.
 
-Or run without installing (npx fetches on first use):
+### npx (no install)
 
 ```json
 {
@@ -75,6 +76,23 @@ Or run without installing (npx fetches on first use):
   }
 }
 ```
+
+### From source
+
+Clone the repo, create a `.env` file with your credentials (see [Development](#development) below), then point Claude Desktop at the local build:
+
+```json
+{
+  "mcpServers": {
+    "libretime": {
+      "command": "node",
+      "args": ["/absolute/path/to/libretime-mcp/dist/stdio/admin.js"]
+    }
+  }
+}
+```
+
+No `env` block needed — credentials are loaded automatically from `.env`.
 
 ## Option 2 — Self-hosted HTTP server
 
