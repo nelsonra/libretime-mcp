@@ -23,7 +23,7 @@ if (!API_KEY) {
 
 const app = createMcpExpressApp({ host: '0.0.0.0' })
 
-app.use(cors({ origin: true, credentials: true }))
+app.use(cors({ origin: process.env.CORS_ORIGIN ?? true, credentials: true }))
 
 // Simple API key middleware — checks Authorization: Bearer <key>
 app.use('/mcp', (req, res, next) => {

@@ -106,7 +106,8 @@ LIBRETIME_PASS=your_api_password
 
 # Required for HTTP servers only
 MCP_API_KEY=your_secret_api_key
-MCP_PORT=3000   # optional, defaults to 3000 (admin) or 3001 (client)
+MCP_PORT=3000        # optional, defaults to 3000 (admin) or 3001 (client)
+CORS_ORIGIN=https://your-frontend.example.com  # optional, restricts CORS to a specific origin (default: reflect any origin)
 ```
 
 Generate a key: `npm run generate:key`

@@ -113,6 +113,7 @@ LIBRETIME_USER=your_api_username
 LIBRETIME_PASS=your_api_password
 MCP_API_KEY=your_secret_api_key     # clients must send this as a Bearer token
 MCP_PORT=3000                        # optional, defaults to 3000 (admin) / 3001 (client)
+CORS_ORIGIN=https://your-app.example.com  # optional, lock CORS to a specific origin (default: reflect any)
 ```
 
 Generate a random API key:
