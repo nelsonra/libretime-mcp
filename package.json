@@ -27,7 +27,7 @@
     "dev:admin-http": "tsx watch --env-file=.env src/http/admin.ts",
     "clean": "rm -rf dist",
     "build": "npm run clean && tsc",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "npm run build && npm test",
     "publish:patch": "npm version patch && npm publish --access public",
     "publish:minor": "npm version minor && npm publish --access public",
     "start:client": "node --env-file=.env dist/stdio/client.js",

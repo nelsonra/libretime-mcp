@@ -8,7 +8,7 @@ const SHOW_HOSTS = [
 ]
 
 const USERS = [
-  { id: 1, username: 'jsmith', first_name: 'John', last_name: 'Smith', email: 'j@example.com', type: 'H' },
+  { id: 1, username: 'jsmith', first_name: 'John', last_name: 'Smith', email: 'j@example.com', role: 'H' },
 ]
 
 beforeEach(() => {

@@ -3,7 +3,7 @@ import { register } from '../../../src/tools/shows/get_schedule.js'
 import { createTestClient, parseResult, jsonResponse } from '../../helpers.js'
 
 const SCHEDULE = [
-  { id: 10, starts: '2024-06-01T06:00:00Z', ends: '2024-06-01T09:00:00Z', show_id: 1, show_name: 'Morning Drive', broadcasted: 1 },
+  { id: 10, starts_at: '2024-06-01T06:00:00Z', ends_at: '2024-06-01T09:00:00Z', instance: 1, file: 100, broadcasted: 1, played: true },
 ]
 
 beforeEach(() => {
@@ -37,6 +37,6 @@ describe('get_schedule', () => {
     const schedule = parseResult(result) as typeof SCHEDULE
 
     expect(schedule).toHaveLength(1)
-    expect(schedule[0].show_name).toBe('Morning Drive')
+    expect(schedule[0].starts_at).toBe('2024-06-01T06:00:00Z')
   })
 })

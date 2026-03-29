@@ -14,8 +14,8 @@ export function register(server: McpServer) {
     async () => {
       const raw = await libreGet('/api/v2/users')
       const users = z.array(UserSchema).parse(raw)
-      const trimmed = users.map(({ id, username, first_name, last_name, email, type }) => ({
-        id, username, first_name, last_name, email, role: type,
+      const trimmed = users.map(({ id, username, first_name, last_name, email, role }) => ({
+        id, username, first_name, last_name, email, role,
       }))
       return toolText(trimmed)
     }

@@ -2,7 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { register } from '../../../src/tools/shows/get_stream_state.js'
 import { createTestClient, parseResult, jsonResponse } from '../../helpers.js'
 
-const STREAM_STATE = { source_enabled: true, live: true, mount: '/live' }
+const STREAM_STATE = {
+  input_main_connected: false,
+  input_main_streaming: false,
+  input_show_connected: true,
+  input_show_streaming: true,
+  schedule_streaming: true,
+}
 
 beforeEach(() => {
   vi.restoreAllMocks()
@@ -16,7 +22,7 @@ describe('get_stream_state', () => {
     const result = await client.callTool({ name: 'get_stream_state', arguments: {} })
     const state = parseResult(result) as typeof STREAM_STATE
 
-    expect(state.source_enabled).toBe(true)
-    expect(state.mount).toBe('/live')
+    expect(state.input_show_connected).toBe(true)
+    expect(state.schedule_streaming).toBe(true)
   })
 })

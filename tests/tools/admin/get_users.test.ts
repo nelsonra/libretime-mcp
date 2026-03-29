@@ -3,8 +3,8 @@ import { register } from '../../../src/tools/admin/get_users.js'
 import { createTestClient, parseResult, jsonResponse } from '../../helpers.js'
 
 const USERS = [
-  { id: 1, username: 'jsmith', first_name: 'John', last_name: 'Smith', email: 'j@example.com', type: 'H' },
-  { id: 2, username: 'admin', first_name: 'Admin', last_name: 'User', email: 'a@example.com', type: 'A' },
+  { id: 1, username: 'jsmith', first_name: 'John', last_name: 'Smith', email: 'j@example.com', role: 'H' },
+  { id: 2, username: 'admin', first_name: 'Admin', last_name: 'User', email: 'a@example.com', role: 'A' },
 ]
 
 beforeEach(() => {
