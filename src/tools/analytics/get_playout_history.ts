@@ -25,8 +25,10 @@ export function register(server: McpServer) {
 
       // Collect unique file IDs then fetch metadata in parallel
       const fileIds = [...new Set(history.map((h) => h.file).filter((id): id is number => id !== null))]
-      const rawFiles = await Promise.all(fileIds.map((id) => libreGet(`/api/v2/files/${id}`)))
-      const files = rawFiles.map((f) => FileMetadataSchema.parse(f))
+      const rawFiles = await Promise.allSettled(fileIds.map((id) => libreGet(`/api/v2/files/${id}`)))
+      const files = rawFiles
+        .map((r) => r.status === 'fulfilled' ? FileMetadataSchema.safeParse(r.value) : null)
+        .flatMap((r) => (r?.success ? [r.data] : []))
 
       const fileMap = new Map(files.map((f) => [f.id, f]))
 

@@ -150,7 +150,7 @@ Or use the built output (`node dist/stdio/client.js`) if you've run `npm run bui
 | `get_shows` | both | `GET /api/v2/shows` |
 | `get_schedule` | both | `GET /api/v2/schedule` |
 | `get_stream_state` | both | `GET /api/v2/stream/state` |
-| `get_listener_counts` | admin | `GET /api/v2/listener-counts` + `/api/v2/mount-names` |
+| ~~`get_listener_counts`~~ | disabled | API returns full history (~120k records) with no server-side filtering |
 | `get_playout_history` | admin | `GET /api/v2/playout-history` + `/api/v2/files/{id}` |
 | `search_files` | admin | `GET /api/v2/files` |
 | `upload_file` | admin | `POST /api/v2/files` (multipart) |

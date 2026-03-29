@@ -6,7 +6,7 @@ export const UserSchema = z.object({
   first_name: z.string(),
   last_name: z.string(),
   email: z.string(),
-  type: z.string(),
+  role: z.string(),
 })
 export type User = z.infer<typeof UserSchema>
 

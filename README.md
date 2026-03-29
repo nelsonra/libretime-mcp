@@ -16,7 +16,7 @@ Tools are organised into subdirectories under `src/tools/` — one file per tool
 - `get_stream_state` — current on-air state
 
 **Analytics (admin)**
-- `get_listener_counts` — listener stats by mount point
+- ~~`get_listener_counts`~~ — disabled (API returns full history with no filtering, ~120k records)
 - `get_playout_history` — recent playout history with track metadata
 
 **Media library (admin)**

@@ -1,8 +1,9 @@
 {
   "name": "@powerfm/libretime-mcp",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "private": false,
   "type": "module",
+  "license": "GPL-3.0",
   "description": "MCP server for LibreTime radio station — connect Claude to your broadcast schedule, media library, and analytics",
   "repository": {
     "type": "git",
@@ -20,10 +21,10 @@
     "README.md"
   ],
   "scripts": {
-    "dev:client": "tsx --env-file=.env watch src/stdio/client.ts",
-    "dev:admin": "tsx --env-file=.env watch src/stdio/admin.ts",
-    "dev:client-http": "tsx --env-file=.env watch src/http/client.ts",
-    "dev:admin-http": "tsx --env-file=.env watch src/http/admin.ts",
+    "dev:client": "tsx watch --env-file=.env src/stdio/client.ts",
+    "dev:admin": "tsx watch --env-file=.env src/stdio/admin.ts",
+    "dev:client-http": "tsx watch --env-file=.env src/http/client.ts",
+    "dev:admin-http": "tsx watch --env-file=.env src/http/admin.ts",
     "clean": "rm -rf dist",
     "build": "npm run clean && tsc",
     "prepublishOnly": "npm run build",
@@ -34,15 +35,21 @@
     "start:client-http": "node --env-file=.env dist/http/client.js",
     "start:admin-http": "node --env-file=.env dist/http/admin.js",
     "generate:key": "node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"",
+    "inspect:client": "npx @modelcontextprotocol/inspector tsx --env-file=.env src/stdio/client.ts",
+    "inspect:admin": "npx @modelcontextprotocol/inspector tsx --env-file=.env src/stdio/admin.ts",
+    "inspect:admin-http": "npx @modelcontextprotocol/inspector --transport http --server-url http://localhost:3000/mcp --header \"Authorization: Bearer $MCP_API_KEY\"",
+    "inspect:client-http": "npx @modelcontextprotocol/inspector --transport http --server-url http://localhost:3001/mcp --header \"Authorization: Bearer $MCP_API_KEY\"",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
+    "cors": "~2.8.6",
     "express": "~5.2.1",
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/cors": "~2.8.19",
     "@types/express": "~5.0.6",
     "@types/node": "^22.0.0",
     "tsx": "^4.19.0",

@@ -3,10 +3,12 @@
 // Exposes POST /mcp using MCP Streamable HTTP transport.
 // Requires Authorization: Bearer <MCP_API_KEY> on every request.
 // Intended for network clients (e.g. powerfm-agent). For Claude Desktop use stdio/admin.ts.
+import '../env.js'
 import { createRequire } from 'module'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
 import { createMcpExpressApp } from '@modelcontextprotocol/sdk/server/express.js'
+import cors from 'cors'
 
 const { version } = createRequire(import.meta.url)('../../package.json')
 
@@ -23,6 +25,7 @@ if (!API_KEY) {
 }
 
 const app = createMcpExpressApp({ host: '0.0.0.0' })
+app.use(cors({ origin: true, credentials: true }))
 
 // Simple API key middleware — checks Authorization: Bearer <key>
 app.use('/mcp', (req, res, next) => {
@@ -36,7 +39,7 @@ app.use('/mcp', (req, res, next) => {
 
 // Stateless transport — a fresh McpServer per request keeps things simple
 // and avoids session management complexity for now
-app.post('/mcp', async (req, res) => {
+app.all('/mcp', async (req, res) => {
   const server = new McpServer({ name: 'libretime-mcp-admin', version })
   registerShows(server)
   registerAnalytics(server)
