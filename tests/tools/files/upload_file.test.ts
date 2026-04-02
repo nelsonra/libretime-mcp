@@ -12,10 +12,11 @@ describe('upload_file', () => {
     const client = await createTestClient(register)
 
     const result = await client.callTool({ name: 'upload_file', arguments: {} })
-    const body = parseResult(result) as { status: string; action: string }
+    const body = parseResult(result) as { status: string; upload_url: null; upload_token: null }
 
     expect(body.status).toBe('upload_required')
-    expect(body.action).toBe('file_upload')
+    expect(body.upload_url).toBeNull()
+    expect(body.upload_token).toBeNull()
   })
 
   it('fetches the file from URL then uploads to LibreTime', async () => {

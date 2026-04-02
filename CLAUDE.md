@@ -108,6 +108,7 @@ LIBRETIME_PASS=your_api_password
 MCP_API_KEY=your_secret_api_key
 MCP_PORT=3000        # optional, defaults to 3000 (admin) or 3001 (client)
 CORS_ORIGIN=https://your-frontend.example.com  # optional, restricts CORS to a specific origin (default: reflect any origin)
+MCP_PUBLIC_URL=https://mcp.yourstation.com     # optional, HTTP admin only — public URL for the file upload UI to POST to (defaults to http://localhost:<MCP_PORT>)
 ```
 
 Generate a key: `npm run generate:key`

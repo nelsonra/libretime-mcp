@@ -1,41 +1,74 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
+import {
+  registerAppTool,
+  registerAppResource,
+  RESOURCE_MIME_TYPE,
+} from '@modelcontextprotocol/ext-apps/server'
+import fs from 'node:fs/promises'
+import path from 'node:path'
 import { libreUpload } from '../../libretime.js'
 import { toolText } from '../../tool-response.js'
 import { LibreFileSchema } from './types.js'
 
-export function register(server: McpServer) {
-  server.registerTool(
+// When running via tsx (dev): __dirname is src/tools/files/ → walk up to project root, then into dist/
+// When running compiled:      __dirname is dist/tools/files/ → walk up two levels to dist/
+const HTML_PATH = import.meta.filename.endsWith('.ts')
+  ? path.join(import.meta.dirname, '../../../dist/apps/upload-file.html')
+  : path.join(import.meta.dirname, '../../apps/upload-file.html')
+
+const resourceUri = 'ui://libretime/upload-file.html'
+
+const metadataFields = {
+  track_title: z.string().optional().describe('Track title'),
+  artist_name: z.string().optional().describe('Artist name'),
+  album_title: z.string().optional().describe('Album title'),
+  genre: z.string().optional().describe('Genre'),
+}
+
+export function register(server: McpServer, uploadUrl?: string, uploadToken?: string) {
+  registerAppTool(
+    server,
     'upload_file',
     {
       description:
-        'Upload an audio file to the LibreTime media library from a URL. If no URL is provided, returns an action signal so the client can trigger a local file upload workflow. Optionally provide metadata such as track title, artist, album, and genre.',
+        'Upload an audio file to the LibreTime media library. When no URL is provided, opens a file picker. Optionally pre-fill metadata such as track title, artist, album, and genre.',
       inputSchema: {
         url: z.string().optional().describe('Publicly accessible URL of the audio file to upload'),
-        track_title: z.string().optional().describe('Track title'),
-        artist_name: z.string().optional().describe('Artist name'),
-        album_title: z.string().optional().describe('Album title'),
-        genre: z.string().optional().describe('Genre'),
+        ...metadataFields,
       },
+      _meta: { ui: { resourceUri } },
     },
     async ({ url, track_title, artist_name, album_title, genre }) => {
       if (!url) {
-        return toolText({ status: 'upload_required', action: 'file_upload' })
+        // No URL — hand off to the UI.
+        // If this is the HTTP server, include an upload_url so the UI can POST directly.
+        // If this is stdio, upload_url is null and the UI will ask for a URL instead.
+        return toolText({
+          status: uploadUrl ? 'upload_ready' : 'upload_required',
+          upload_url: uploadUrl ?? null,
+          upload_token: uploadToken ?? null,
+        })
       }
 
       let fileResponse: Response
       try {
         fileResponse = await fetch(url)
         if (!fileResponse.ok) {
-          return toolText({ status: 'error', reason: `Could not fetch file: ${fileResponse.status} ${fileResponse.statusText}` })
+          return toolText({
+            status: 'error',
+            reason: `Could not fetch file: ${fileResponse.status} ${fileResponse.statusText}`,
+          })
         }
       } catch (err) {
-        return toolText({ status: 'error', reason: `Failed to reach URL: ${err instanceof Error ? err.message : String(err)}` })
+        return toolText({
+          status: 'error',
+          reason: `Failed to reach URL: ${err instanceof Error ? err.message : String(err)}`,
+        })
       }
 
       const fileName = url.split('/').pop()?.split('?')[0] || 'upload'
       const blob = await fileResponse.blob()
-
       const formData = new FormData()
       formData.append('file', blob, fileName)
       if (track_title) formData.append('track_title', track_title)
@@ -48,7 +81,34 @@ export function register(server: McpServer) {
         const file = LibreFileSchema.parse(raw)
         return toolText({ status: 'success', file })
       } catch (err) {
-        return toolText({ status: 'error', reason: `LibreTime upload failed: ${err instanceof Error ? err.message : String(err)}` })
+        return toolText({
+          status: 'error',
+          reason: `LibreTime upload failed: ${err instanceof Error ? err.message : String(err)}`,
+        })
+      }
+    }
+  )
+
+  // Serve the bundled React app HTML.
+  // When an upload URL is configured, allow the iframe to connect to it (CSP connect-src).
+  registerAppResource(
+    server,
+    resourceUri,
+    resourceUri,
+    { mimeType: RESOURCE_MIME_TYPE },
+    async () => {
+      const html = await fs.readFile(HTML_PATH, 'utf-8')
+      return {
+        contents: [
+          {
+            uri: resourceUri,
+            mimeType: RESOURCE_MIME_TYPE,
+            text: html,
+            ...(uploadUrl && {
+              _meta: { ui: { csp: { connectDomains: [uploadUrl] } } },
+            }),
+          },
+        ],
       }
     }
   )
