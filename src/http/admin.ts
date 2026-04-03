@@ -38,6 +38,11 @@ app.use(cors({ origin: process.env.CORS_ORIGIN ?? true, credentials: true }))
 
 const UPLOAD_URL = registerUploadEndpoint(app, PUBLIC_URL, UPLOAD_TOKEN)
 
+// Health check — no auth required, used by uptime monitors and load balancers
+app.get('/ping', (_req, res) => {
+  res.json({ status: 'ok' })
+})
+
 // Simple API key middleware — checks Authorization: Bearer <key>
 app.use('/mcp', (req, res, next) => {
   if (AUTH_DISABLED) return next()

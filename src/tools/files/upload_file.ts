@@ -7,9 +7,9 @@ import {
 } from '@modelcontextprotocol/ext-apps/server'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { libreUpload } from '../../libretime.js'
+import { libreGet, libreUpload } from '../../libretime.js'
 import { toolText } from '../../tool-response.js'
-import { LibreFileSchema } from './types.js'
+import { LibreFileSchema, LibrarySchema } from './types.js'
 
 // When running via tsx (dev): __dirname is src/tools/files/ → walk up to project root, then into dist/
 // When running compiled:      __dirname is dist/tools/files/ → walk up two levels to dist/
@@ -24,6 +24,7 @@ const metadataFields = {
   artist_name: z.string().optional().describe('Artist name'),
   album_title: z.string().optional().describe('Album title'),
   genre: z.string().optional().describe('Genre'),
+  library: z.number().optional().describe('Track type / library ID'),
 }
 
 export function register(server: McpServer, uploadUrl?: string, uploadToken?: string) {
@@ -39,8 +40,17 @@ export function register(server: McpServer, uploadUrl?: string, uploadToken?: st
       },
       _meta: { ui: { resourceUri } },
     },
-    async ({ url, track_title, artist_name, album_title, genre }) => {
+    async ({ url, track_title, artist_name, album_title, genre, library }) => {
       if (!url) {
+        // Fetch track type options for the UI dropdown
+        let libraries: unknown[] = []
+        try {
+          const raw = await libreGet('/api/v2/libraries')
+          libraries = LibrarySchema.array().parse(raw)
+        } catch {
+          // Non-fatal — UI will just show no dropdown
+        }
+
         // No URL — hand off to the UI.
         // If this is the HTTP server, include an upload_url so the UI can POST directly.
         // If this is stdio, upload_url is null and the UI will ask for a URL instead.
@@ -48,6 +58,7 @@ export function register(server: McpServer, uploadUrl?: string, uploadToken?: st
           status: uploadUrl ? 'upload_ready' : 'upload_required',
           upload_url: uploadUrl ?? null,
           upload_token: uploadToken ?? null,
+          libraries,
         })
       }
 
@@ -75,6 +86,7 @@ export function register(server: McpServer, uploadUrl?: string, uploadToken?: st
       if (artist_name) formData.append('artist_name', artist_name)
       if (album_title) formData.append('album_title', album_title)
       if (genre) formData.append('genre', genre)
+      if (library) formData.append('library', String(library))
 
       try {
         const raw = await libreUpload('/api/v2/files', formData)

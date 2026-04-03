@@ -5,6 +5,7 @@
   "type": "module",
   "license": "GPL-3.0",
   "description": "MCP server for LibreTime radio station — connect Claude to your broadcast schedule, media library, and analytics",
+  "keywords": ["mcp", "modelcontextprotocol", "libretime", "radio", "claude"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nelsonra/libretime-mcp.git"

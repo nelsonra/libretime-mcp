@@ -1,5 +1,13 @@
 import { z } from 'zod'
 
+export const LibrarySchema = z.object({
+  id: z.number(),
+  name: z.string().nullable(),
+  code: z.string(),
+  enabled: z.boolean(),
+})
+export type Library = z.infer<typeof LibrarySchema>
+
 export const LibreFileSchema = z.object({
   id: z.number(),
   name: z.string(),
