@@ -6,6 +6,7 @@ import type { Express } from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
+import morgan from 'morgan'
 
 const { version } = createRequire(import.meta.url)('../../package.json')
 
@@ -34,6 +35,12 @@ export function createHttpServer({ name, defaultPort, register, setupRoutes }: S
   }
 
   const app = createMcpExpressApp({ host: '0.0.0.0' })
+
+  // Request logging — 'dev' in development (coloured, concise),
+  // 'combined' in production (Apache format: IP, method, path, status, size, user-agent).
+  // Runs first so every request is logged regardless of auth outcome.
+  const logFormat = process.env.NODE_ENV === 'production' ? 'combined' : 'dev'
+  app.use(morgan(logFormat))
 
   // Security headers — sets ~14 protective HTTP headers automatically.
   // contentSecurityPolicy disabled: the MCP SDK sets its own and they'd conflict.
