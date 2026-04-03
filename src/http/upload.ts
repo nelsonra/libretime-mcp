@@ -24,8 +24,11 @@ export function registerUploadEndpoint(app: Express, publicUrl: string, uploadTo
   })
   app.options('/upload', uploadCors)
   app.post('/upload', uploadCors, async (req, res) => {
+    const totalStart = Date.now()
+
     const token = req.headers['x-upload-token']
     if (!token || token !== uploadToken) {
+      console.error(`[upload] status=401 total_ms=${Date.now() - totalStart}`)
       res.status(401).json({ error: 'Unauthorized' })
       return
     }
@@ -37,16 +40,16 @@ export function registerUploadEndpoint(app: Express, publicUrl: string, uploadTo
     const libreUrl = new URL('/api/v2/files', BASE_URL).toString()
 
     try {
-      console.error('[upload] buffering request body...')
       const body = await new Promise<Buffer>((resolve, reject) => {
         const chunks: Buffer[] = []
         req.on('data', (chunk: Buffer) => chunks.push(chunk))
         req.on('end', () => resolve(Buffer.concat(chunks)))
         req.on('error', reject)
       })
-      console.error(`[upload] body buffered: ${body.length} bytes`)
 
-      console.error(`[upload] forwarding to LibreTime: ${libreUrl}`)
+      const sizeMb = (body.length / 1024 / 1024).toFixed(2)
+
+      const libreStart = Date.now()
       const response = await fetch(libreUrl, {
         method: 'POST',
         headers: {
@@ -57,18 +60,20 @@ export function registerUploadEndpoint(app: Express, publicUrl: string, uploadTo
         },
         body: new Uint8Array(body),
       })
-      console.error(`[upload] LibreTime responded: ${response.status}`)
+      const libreMs = Date.now() - libreStart
+      const totalMs = Date.now() - totalStart
 
       if (!response.ok) {
         const detail = await response.text()
-        console.error(`[upload] LibreTime error detail: ${detail}`)
+        console.error(`[upload] size=${sizeMb}mb libretime_ms=${libreMs} total_ms=${totalMs} status=${response.status} error="${detail}"`)
         res.status(502).json({ error: `LibreTime error: ${response.status}`, detail })
         return
       }
 
+      console.error(`[upload] size=${sizeMb}mb libretime_ms=${libreMs} total_ms=${totalMs} status=${response.status}`)
       res.json(await response.json())
     } catch (err) {
-      console.error('[upload] caught error:', err)
+      console.error(`[upload] total_ms=${Date.now() - totalStart} status=500 error="${err instanceof Error ? err.message : String(err)}"`)
       res.status(500).json({ error: err instanceof Error ? err.message : String(err) })
     }
   })
