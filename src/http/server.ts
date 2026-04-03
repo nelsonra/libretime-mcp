@@ -5,6 +5,7 @@ import { createMcpExpressApp } from '@modelcontextprotocol/sdk/server/express.js
 import type { Express } from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
+import rateLimit from 'express-rate-limit'
 
 const { version } = createRequire(import.meta.url)('../../package.json')
 
@@ -38,6 +39,16 @@ export function createHttpServer({ name, defaultPort, register, setupRoutes }: S
   // contentSecurityPolicy disabled: the MCP SDK sets its own and they'd conflict.
   app.use(helmet({ contentSecurityPolicy: false }))
   app.use(cors({ origin: process.env.CORS_ORIGIN ?? true, credentials: true }))
+
+  // Rate limiting — max 120 requests per IP per minute.
+  // Protects against runaway clients and accidental hammering.
+  // /ping is excluded so uptime monitors never get blocked.
+  app.use(/^\/(mcp|upload)/, rateLimit({ windowMs: 60_000, max: 120 }))
+
+  // Rate limiting — max 120 requests per IP per minute.
+  // Protects against runaway clients and accidental hammering.
+  // /ping is excluded so uptime monitors never get blocked.
+  app.use(/^\/(mcp|upload)/, rateLimit({ windowMs: 60_000, max: 120 }))
 
   // Health check — no auth required, used by uptime monitors and load balancers
   app.get('/ping', (_req, res) => {
