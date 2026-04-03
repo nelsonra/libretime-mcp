@@ -4,49 +4,14 @@
 // Requires Authorization: Bearer <MCP_API_KEY> on every request.
 // Intended for network clients. For Claude Desktop use stdio/client.ts.
 import '../env.js'
-import { createRequire } from 'module'
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
-import { createMcpExpressApp } from '@modelcontextprotocol/sdk/server/express.js'
-import cors from 'cors'
+
 import { register as registerShows } from '../tools/shows/index.js'
+import { createHttpServer } from './server.js'
 
-const { version } = createRequire(import.meta.url)('../../package.json')
-
-const PORT = parseInt(process.env.MCP_PORT ?? '3001', 10)
-const API_KEY = process.env.MCP_API_KEY
-
-if (!API_KEY) {
-  console.error('ERROR: MCP_API_KEY environment variable is required')
-  process.exit(1)
-}
-
-const app = createMcpExpressApp({ host: '0.0.0.0' })
-
-app.use(cors({ origin: process.env.CORS_ORIGIN ?? true, credentials: true }))
-
-// Simple API key middleware — checks Authorization: Bearer <key>
-app.use('/mcp', (req, res, next) => {
-  const auth = req.headers['authorization']
-  if (!auth || auth !== `Bearer ${API_KEY}`) {
-    res.status(401).json({ error: 'Unauthorized' })
-    return
-  }
-  next()
-})
-
-// Stateless transport — a fresh McpServer per request keeps things simple
-// and avoids session management complexity for now
-app.all('/mcp', async (req, res) => {
-  const server = new McpServer({ name: 'libretime-mcp-client', version })
-  registerShows(server)
-
-  const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined })
-  await server.connect(transport)
-  await transport.handleRequest(req, res, req.body)
-})
-
-app.listen(PORT, '0.0.0.0', () => {
-  console.error(`LibreTime MCP client HTTP server listening on port ${PORT}`)
-  console.error('Endpoint: POST /mcp  (Authorization: Bearer <MCP_API_KEY>)')
+createHttpServer({
+  name: 'libretime-mcp-client',
+  defaultPort: 3001,
+  register: (server) => {
+    registerShows(server)
+  },
 })
