@@ -4,6 +4,7 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import { createMcpExpressApp } from '@modelcontextprotocol/sdk/server/express.js'
 import type { Express } from 'express'
 import cors from 'cors'
+import helmet from 'helmet'
 
 const { version } = createRequire(import.meta.url)('../../package.json')
 
@@ -32,6 +33,10 @@ export function createHttpServer({ name, defaultPort, register, setupRoutes }: S
   }
 
   const app = createMcpExpressApp({ host: '0.0.0.0' })
+
+  // Security headers — sets ~14 protective HTTP headers automatically.
+  // contentSecurityPolicy disabled: the MCP SDK sets its own and they'd conflict.
+  app.use(helmet({ contentSecurityPolicy: false }))
   app.use(cors({ origin: process.env.CORS_ORIGIN ?? true, credentials: true }))
 
   // Health check — no auth required, used by uptime monitors and load balancers
