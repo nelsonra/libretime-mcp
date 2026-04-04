@@ -24,35 +24,25 @@ npm run dev:admin-http      # full-access HTTP, port 3000
 
 ### stdio (local, no network needed)
 
-The simplest way to connect Claude Desktop to the server directly on your machine.
+The Claude Desktop config is the same as in the [README](README.md#option-1--claude-desktop-stdio) — the only difference when working from source is using `tsx` instead of the installed binary:
 
-1. Open your Claude Desktop config:
-   - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-   - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+```json
+{
+  "mcpServers": {
+    "libretime": {
+      "command": "npx",
+      "args": ["tsx", "/absolute/path/to/libretime-mcp/src/stdio/admin.ts"],
+      "env": {
+        "LIBRETIME_URL": "https://your-instance.example.com",
+        "LIBRETIME_USER": "your_user",
+        "LIBRETIME_PASS": "your_pass"
+      }
+    }
+  }
+}
+```
 
-2. Add the server entry (use the absolute path to this repo):
-
-   ```json
-   {
-     "mcpServers": {
-       "libretime": {
-         "command": "npx",
-         "args": ["tsx", "/absolute/path/to/libretime-mcp/src/stdio/admin.ts"],
-         "env": {
-           "LIBRETIME_URL": "https://your-instance.example.com",
-           "LIBRETIME_USER": "your_user",
-           "LIBRETIME_PASS": "your_pass"
-         }
-       }
-     }
-   }
-   ```
-
-3. Restart Claude Desktop — the server starts automatically when Claude launches.
-
-4. Start a new conversation and ask: *"What shows are scheduled this week?"*
-
-> Use `src/stdio/client.ts` instead of `admin.ts` for read-only access.
+Restart Claude Desktop after saving. Use `src/stdio/client.ts` for read-only access.
 
 ---
 
