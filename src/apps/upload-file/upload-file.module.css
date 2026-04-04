@@ -1,9 +1,83 @@
+.message {
+  padding: var(--spacing-md);
+  font-size: 0.875rem;
+}
+
+.wrapper {
+  /* PowerFM brand colours — fixed regardless of host light/dark mode */
+  --color-background-primary: #3d3d3d;
+  --color-background-secondary: #2d2d2d;
+  --color-text-primary: #e0e0e0;
+  --color-text-secondary: #bdbdbd;
+  --color-border: #555555;
+  --color-error: #f87171;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: #333333;
+  min-height: 100%;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: #2d2d2d;
+  border-bottom: 2px solid #ffff00;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.headerIcon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.headerTitle {
+  font-size: var(--font-text-md-size);
+  font-weight: var(--font-weight-bold);
+  color: #ffffff;
+}
+
+.headerRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  text-decoration: none;
+}
+
+.poweredBy {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #999999;
+}
+
+.powerFmLogo {
+  height: 30px;
+  width: auto;
+}
+
+.successLabel {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
 .container {
   padding: var(--spacing-md);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
-  max-width: 480px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .heading {
@@ -27,12 +101,12 @@
 }
 
 .dropZone:hover {
-  border-color: var(--color-accent);
+  border-color: #ffff00;
 }
 
 .dropZoneHasFile {
   border-style: solid;
-  border-color: var(--color-accent);
+  border-color: #ffff00;
 }
 
 .hiddenInput {
@@ -86,15 +160,20 @@
   font-size: var(--font-text-md-size);
 }
 
+.input::placeholder {
+  color: var(--color-text-secondary);
+  opacity: 1;
+}
+
 .input:focus {
   outline: none;
-  border-color: var(--color-accent);
+  border-color: #ffff00;
 }
 
 .button {
   padding: var(--spacing-sm) var(--spacing-md);
-  background: var(--color-accent);
-  color: var(--color-text-on-accent);
+  background: #ffff00;
+  color: #1a1a1a;
   border: none;
   border-radius: var(--border-radius-md);
   font-family: var(--font-sans);

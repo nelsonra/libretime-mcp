@@ -2,6 +2,28 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import styles from './upload-file.module.css'
 import { useFileUploader } from './useFileUploader.js'
+import libreTimeIcon from '../assets/libretime-icon.svg'
+import powerFmLogo from '../assets/logo_yellow_64.svg'
+
+function Header() {
+  return (
+    <header className={styles.header}>
+      <div className={styles.headerLeft}>
+        <img src={libreTimeIcon} alt="LibreTime" className={styles.headerIcon} />
+        <span className={styles.headerTitle}>LibreTime File Uploader</span>
+      </div>
+      <a
+        href="https://powerfm.org"
+        target="_blank"
+        rel="noopener noreferrer"
+        className={styles.headerRight}
+      >
+        <span className={styles.poweredBy}>powered by</span>
+        <img src={powerFmLogo} alt="PowerFM" className={styles.powerFmLogo} />
+      </a>
+    </header>
+  )
+}
 
 function FileUploaderApp() {
   const {
@@ -19,28 +41,32 @@ function FileUploaderApp() {
   // Success screen — shown after either upload path completes
   if (uploadState === 'success' && uploadedFile) {
     return (
-      <div className={styles.container}>
-        <div className={styles.successIcon}>✓</div>
-        <p className={styles.successLabel}>Uploaded successfully</p>
-        <dl className={styles.fileDetails}>
-          <dt>Title</dt><dd>{uploadedFile.track_title ?? uploadedFile.name}</dd>
-          {uploadedFile.artist_name && <><dt>Artist</dt><dd>{uploadedFile.artist_name}</dd></>}
-          {uploadedFile.album_title && <><dt>Album</dt><dd>{uploadedFile.album_title}</dd></>}
-          {uploadedFile.genre && <><dt>Genre</dt><dd>{uploadedFile.genre}</dd></>}
-          <dt>ID</dt><dd>{uploadedFile.id}</dd>
-        </dl>
-        <button className={styles.button} onClick={handleReset}>Upload another</button>
+      <div className={styles.wrapper}>
+        <Header />
+        <div className={styles.container}>
+          <div className={styles.successIcon}>✓</div>
+          <p className={styles.successLabel}>Uploaded successfully</p>
+          <dl className={styles.fileDetails}>
+            <dt>Title</dt><dd>{uploadedFile.track_title ?? uploadedFile.name}</dd>
+            {uploadedFile.artist_name && <><dt>Artist</dt><dd>{uploadedFile.artist_name}</dd></>}
+            {uploadedFile.album_title && <><dt>Album</dt><dd>{uploadedFile.album_title}</dd></>}
+            {uploadedFile.genre && <><dt>Genre</dt><dd>{uploadedFile.genre}</dd></>}
+            <dt>ID</dt><dd>{uploadedFile.id}</dd>
+          </dl>
+          <button className={styles.button} onClick={handleReset}>Upload another</button>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className={styles.container}>
-      <h3 className={styles.heading}>Upload to LibreTime</h3>
+    <div className={styles.wrapper}>
+      <Header />
+      <div className={styles.container}>
 
       {/* File picker (HTTP mode) or URL input (stdio mode) */}
       {mode === 'file-picker' ? (
-        <label className={`${styles.dropZone} ${file ? styles.dropZoneActive : ''}`}>
+        <label className={`${styles.dropZone} ${file ? styles.dropZoneHasFile : ''}`}>
           <input
             ref={fileInputRef}
             type="file"
@@ -51,7 +77,7 @@ function FileUploaderApp() {
           />
           {file
             ? <span className={styles.fileName}>{file.name}</span>
-            : <span className={styles.hint}>Click to choose an audio file</span>
+            : <span className={styles.dropHint}>Click to choose an audio file</span>
           }
         </label>
       ) : (
@@ -109,6 +135,7 @@ function FileUploaderApp() {
       >
         {busy ? 'Uploading…' : 'Upload'}
       </button>
+      </div>
     </div>
   )
 }
