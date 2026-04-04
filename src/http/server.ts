@@ -79,6 +79,11 @@ export function createHttpServer({ name, defaultPort, register, setupRoutes }: S
   // Stateless transport — a fresh McpServer per request keeps things simple
   // and avoids session management complexity for now.
   app.all('/mcp', async (req, res) => {
+    // Log which MCP method and tool was called — morgan only sees POST /mcp
+    const method = req.body?.method as string | undefined
+    const toolName = req.body?.params?.name as string | undefined
+    if (method) console.error(`[mcp] ${method}${toolName ? ` tool=${toolName}` : ''}`)
+
     const server = new McpServer({ name, version })
     register(server)
 
