@@ -20,6 +20,110 @@ npm run dev:client-http     # read-only HTTP, port 3001
 npm run dev:admin-http      # full-access HTTP, port 3000
 ```
 
+## Testing with Claude Desktop
+
+### stdio (local, no network needed)
+
+The simplest way to connect Claude Desktop to the server directly on your machine.
+
+1. Open your Claude Desktop config:
+   - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+   - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+
+2. Add the server entry (use the absolute path to this repo):
+
+   ```json
+   {
+     "mcpServers": {
+       "libretime": {
+         "command": "npx",
+         "args": ["tsx", "/absolute/path/to/libretime-mcp/src/stdio/admin.ts"],
+         "env": {
+           "LIBRETIME_URL": "https://your-instance.example.com",
+           "LIBRETIME_USER": "your_user",
+           "LIBRETIME_PASS": "your_pass"
+         }
+       }
+     }
+   }
+   ```
+
+3. Restart Claude Desktop — the server starts automatically when Claude launches.
+
+4. Start a new conversation and ask: *"What shows are scheduled this week?"*
+
+> Use `src/stdio/client.ts` instead of `admin.ts` for read-only access.
+
+---
+
+### HTTP via Cloudflare tunnel (Claude Desktop over the network)
+
+Use this when testing the HTTP server end-to-end, including the file upload UI.
+
+**Prerequisites:** `.env` configured with LibreTime credentials and:
+```
+MCP_PUBLIC_URL=https://<your-tunnel>.trycloudflare.com
+DISABLE_AUTH=true   # Claude Desktop connectors don't support custom headers yet
+```
+
+1. **Start a Cloudflare tunnel** (keep this terminal open):
+   ```bash
+   npx cloudflared tunnel --url http://localhost:3000
+   ```
+   Copy the generated `https://` URL and set it as `MCP_PUBLIC_URL` in `.env`.
+
+2. **Start the HTTP admin server:**
+   ```bash
+   npm run dev:admin-http
+   ```
+
+3. **Add a connector in Claude Desktop:**
+   - Settings → Connectors → Add custom connector
+   - URL: `https://<your-tunnel>.trycloudflare.com/mcp`
+   - Remove any existing libretime connector first.
+
+4. Start a new conversation and ask: *"I want to upload a file to LibreTime"* — the file picker UI should appear.
+
+> **Verify the tunnel is reachable** by hitting it in a browser. You should see a JSON error response, which confirms the server is up.
+
+---
+
+## Testing the upload UI with basic-host
+
+basic-host is a lightweight local MCP host for testing MCP App UIs without needing Claude Desktop.
+
+1. **Clone the MCP ext-apps repo** at the version matching your installed SDK:
+   ```bash
+   git clone --branch "v$(npm view @modelcontextprotocol/ext-apps version)" --depth 1 \
+     https://github.com/modelcontextprotocol/ext-apps.git /tmp/mcp-ext-apps
+   ```
+
+2. **Install and build basic-host:**
+   ```bash
+   cd /tmp/mcp-ext-apps/examples/basic-host
+   npm install
+   npm run build
+   ```
+
+3. **Start the HTTP admin server** with auth disabled (basic-host doesn't send auth headers):
+   ```bash
+   # In your libretime-mcp directory
+   DISABLE_AUTH=true npm run dev:admin-http
+   ```
+
+4. **Start basic-host:**
+   ```bash
+   SERVERS='["http://localhost:3000/mcp"]' npx tsx serve.ts
+   ```
+
+5. Open `http://localhost:8080` in your browser.
+
+6. Find the `upload_file` tool and call it with no arguments — the file picker UI should appear.
+
+> Watch the admin server terminal for `[upload]` telemetry lines showing file size and transfer time when a file is submitted.
+
+---
+
 ## Debugging with MCP Inspector
 
 The Inspector gives you a browser UI to call tools and inspect responses.
