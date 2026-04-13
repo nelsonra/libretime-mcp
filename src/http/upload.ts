@@ -34,10 +34,12 @@ export function registerUploadEndpoint(app: Express, publicUrl: string, uploadTo
     }
 
     const BASE_URL = process.env.LIBRETIME_URL ?? ''
-    const USER = process.env.LIBRETIME_USER ?? ''
-    const PASS = process.env.LIBRETIME_PASS ?? ''
-    const libreAuth = 'Basic ' + Buffer.from(`${USER}:${PASS}`).toString('base64')
-    const libreUrl = new URL('/api/v2/files', BASE_URL).toString()
+    // /rest/media is the legacy PHP upload endpoint — the only path that writes
+    // files to disk and queues the analyzer. Auth uses the LibreTime API key
+    // (from config.yml general.api_key) as the Basic Auth username with no password.
+    const API_KEY = process.env.LIBRETIME_API_KEY ?? ''
+    const libreAuth = 'Basic ' + Buffer.from(`${API_KEY}:`).toString('base64')
+    const libreUrl = new URL('/rest/media', BASE_URL).toString()
 
     try {
       const body = await new Promise<Buffer>((resolve, reject) => {
