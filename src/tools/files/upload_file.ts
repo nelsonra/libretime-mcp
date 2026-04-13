@@ -82,6 +82,11 @@ export function register(server: McpServer, uploadUrl?: string, uploadToken?: st
       const blob = await fileResponse.blob()
       const formData = new FormData()
       formData.append('file', blob, fileName)
+      // Required fields — LibreTime rejects the upload without these
+      formData.append('name', fileName)
+      formData.append('size', String(blob.size))
+      formData.append('mime', blob.type || 'audio/mpeg')
+      formData.append('accessed', String(Math.floor(Date.now() / 1000)))
       if (track_title) formData.append('track_title', track_title)
       if (artist_name) formData.append('artist_name', artist_name)
       if (album_title) formData.append('album_title', album_title)
