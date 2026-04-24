@@ -28,17 +28,16 @@ function Header() {
 function FileUploaderApp() {
   const {
     mode, uploadState, uploadedFile, errorMsg,
-    file, url, libraries, selectedLibrary, metadata, busy,
+    file, libraries, selectedLibrary, metadata, busy,
     app, error, fileInputRef,
     handleFileChange, handleMetadataChange,
-    handleFilePick, handleUrl, handleReset,
-    setUrl, setSelectedLibrary,
+    handleFilePick, handleReset,
+    setSelectedLibrary,
   } = useFileUploader()
 
   if (error) return <div className={styles.message}>Error: {error.message}</div>
   if (!app || mode === 'loading') return <div className={styles.message}>Loading…</div>
 
-  // Success screen — shown after either upload path completes
   if (uploadState === 'success' && uploadedFile) {
     return (
       <div className={styles.wrapper}>
@@ -64,34 +63,21 @@ function FileUploaderApp() {
       <Header />
       <div className={styles.container}>
 
-      {/* File picker (HTTP mode) or URL input (stdio mode) */}
-      {mode === 'file-picker' ? (
-        <label className={`${styles.dropZone} ${file ? styles.dropZoneHasFile : ''}`}>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="audio/*"
-            onChange={handleFileChange}
-            className={styles.hiddenInput}
-            disabled={busy}
-          />
-          {file
-            ? <span className={styles.fileName}>{file.name}</span>
-            : <span className={styles.dropHint}>Click to choose an audio file</span>
-          }
-        </label>
-      ) : (
+      <label className={`${styles.dropZone} ${file ? styles.dropZoneHasFile : ''}`}>
         <input
-          type="url"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder="https://example.com/show.mp3"
-          className={styles.input}
+          ref={fileInputRef}
+          type="file"
+          accept="audio/*"
+          onChange={handleFileChange}
+          className={styles.hiddenInput}
           disabled={busy}
         />
-      )}
+        {file
+          ? <span className={styles.fileName}>{file.name}</span>
+          : <span className={styles.dropHint}>Click to choose an audio file</span>
+        }
+      </label>
 
-      {/* Track type dropdown — only shown when libraries are available */}
       {libraries.length > 0 && (
         <label className={styles.fieldLabel}>
           <span className={styles.fieldName}>Track type</span>
@@ -109,7 +95,6 @@ function FileUploaderApp() {
         </label>
       )}
 
-      {/* Metadata fields */}
       <div className={styles.fields}>
         {(['track_title', 'artist_name', 'album_title', 'genre'] as const).map((field) => (
           <label key={field} className={styles.fieldLabel}>
@@ -130,8 +115,8 @@ function FileUploaderApp() {
 
       <button
         className={styles.button}
-        onClick={mode === 'file-picker' ? handleFilePick : handleUrl}
-        disabled={busy || (mode === 'file-picker' ? !file : !url.trim())}
+        onClick={handleFilePick}
+        disabled={busy || !file}
       >
         {busy ? 'Uploading…' : 'Upload'}
       </button>
@@ -140,7 +125,6 @@ function FileUploaderApp() {
   )
 }
 
-// Mount the React app into the <div id="root"> in upload-file.html
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <FileUploaderApp />

@@ -1,19 +1,11 @@
-// ON HOLD — waiting on LibreTime to wire the analyzer in the DRF /api/v2/files endpoint.
+// Active upload implementation — uses /rest/media (legacy LibreTime PHP endpoint).
 //
-// Current behaviour of /api/v2/files (POST):
-//   - Creates a DB record (import_status = 1)
-//   - Does NOT write the file to disk
-//   - Does NOT queue the RabbitMQ analyzer job
-//   - filepath stays null; import_status never transitions to 0
+// Background: /api/v2/files (DRF) creates a DB record but never writes to disk or queues
+// the analyzer. /rest/media is the only endpoint that triggers the full import workflow.
+// This file stays active until LibreTime wires the analyzer in the DRF endpoint.
 //
-// The working upload path is in upload_file_legacy.ts (/rest/media, legacy PHP endpoint).
-// index.ts imports from upload_file_legacy.ts until this is resolved upstream.
-//
-// To switch back once the DRF endpoint is fixed:
-//   1. Update index.ts to import from './upload_file.js' instead of './upload_file_legacy.js'
-//   2. Delete upload_file_legacy.ts
-//
-// Upstream context: PLAN.md → Open source contributions → LibreTime file upload
+// When that upstream fix lands, swap index.ts to import from upload_file.ts instead.
+// See upload_file.ts for the DRF implementation kept ready for that switch.
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
@@ -24,10 +16,12 @@ import {
 } from '@modelcontextprotocol/ext-apps/server'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { libreGet, libreUpload } from '../../libretime.js'
+import { libreGet, libreRestMedia } from '../../libretime.js'
 import { toolText } from '../../tool-response.js'
 import { LibreFileSchema, LibrarySchema } from './types.js'
 
+// When running via tsx (dev): __dirname is src/tools/files/ → walk up to project root, then into dist/
+// When running compiled:      __dirname is dist/tools/files/ → walk up two levels to dist/
 const HTML_PATH = import.meta.filename.endsWith('.ts')
   ? path.join(import.meta.dirname, '../../../dist/apps/upload-file.html')
   : path.join(import.meta.dirname, '../../apps/upload-file.html')
@@ -101,16 +95,12 @@ export function register(server: McpServer, uploadUrl?: string, uploadToken?: st
         const mime = inferMime(file_path)
         const formData = new FormData()
         formData.append('file', new Blob([new Uint8Array(fileBuffer)], { type: mime }), fileName)
-        formData.append('name', fileName)
-        formData.append('size', String(fileBuffer.byteLength))
-        formData.append('mime', mime)
-        formData.append('accessed', String(Math.floor(Date.now() / 1000)))
         appendMetadata(formData, meta)
 
         try {
-          const raw = await libreUpload('/api/v2/files', formData)
-          const file = LibreFileSchema.parse(raw)
-          return toolText({ status: 'success', file })
+          const raw = await libreRestMedia(formData)
+          const parsed = LibreFileSchema.safeParse(raw)
+          return toolText({ status: 'success', file: parsed.success ? parsed.data : raw })
         } catch (err) {
           return toolText({
             status: 'error',
@@ -139,19 +129,14 @@ export function register(server: McpServer, uploadUrl?: string, uploadToken?: st
 
         const fileName = url.split('/').pop()?.split('?')[0] || 'upload'
         const blob = await fileResponse.blob()
-        const mime = blob.type || inferMime(fileName)
         const formData = new FormData()
-        formData.append('file', blob, fileName)
-        formData.append('name', fileName)
-        formData.append('size', String(blob.size))
-        formData.append('mime', mime)
-        formData.append('accessed', String(Math.floor(Date.now() / 1000)))
+        formData.append('file', new Blob([await blob.arrayBuffer()], { type: blob.type || inferMime(fileName) }), fileName)
         appendMetadata(formData, meta)
 
         try {
-          const raw = await libreUpload('/api/v2/files', formData)
-          const file = LibreFileSchema.parse(raw)
-          return toolText({ status: 'success', file })
+          const raw = await libreRestMedia(formData)
+          const parsed = LibreFileSchema.safeParse(raw)
+          return toolText({ status: 'success', file: parsed.success ? parsed.data : raw })
         } catch (err) {
           return toolText({
             status: 'error',

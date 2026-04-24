@@ -63,7 +63,8 @@ libretime-mcp/
         └── admin/
             ├── types.ts             ← Zod schemas: LibreFileSchema, UserSchema, ShowHostSchema
             ├── search_files.ts
-            ├── upload_file.ts
+            ├── upload_file_legacy.ts  ← active: POST /rest/media (API key auth)
+            ├── upload_file.ts         ← benched: POST /api/v2/files (DRF, analyzer not wired)
             ├── update_file_metadata.ts
             ├── delete_file.ts
             ├── get_users.ts
@@ -104,11 +105,15 @@ LIBRETIME_URL=https://your-libretime-instance.example.com
 LIBRETIME_USER=your_api_username
 LIBRETIME_PASS=your_api_password
 
+# Required for file upload (both stdio and HTTP admin)
+LIBRETIME_API_KEY=your_libretime_api_key   # general.api_key from LibreTime config.yml
+
 # Required for HTTP servers only
 MCP_API_KEY=your_secret_api_key
 MCP_PORT=3000        # optional, defaults to 3000 (admin) or 3001 (client)
 CORS_ORIGIN=https://your-frontend.example.com  # optional, restricts CORS to a specific origin (default: reflect any origin)
 MCP_PUBLIC_URL=https://mcp.yourstation.com     # optional, HTTP admin only — public URL for the file upload UI to POST to (defaults to http://localhost:<MCP_PORT>)
+UPLOAD_PORT=4000     # optional, stdio admin only — port for the sidecar upload HTTP server (defaults to 4000)
 ```
 
 Generate a key: `npm run generate:key`
@@ -155,7 +160,7 @@ Or use the built output (`node dist/stdio/client.js`) if you've run `npm run bui
 | ~~`get_listener_counts`~~ | disabled | API returns full history (~120k records) with no server-side filtering |
 | `get_playout_history` | admin | `GET /api/v2/playout-history` + `/api/v2/files/{id}` |
 | `search_files` | admin | `GET /api/v2/files` |
-| `upload_file` | admin | `POST /api/v2/files` (multipart) |
+| `upload_file` | admin | `POST /rest/media` (legacy PHP, API key auth) |
 | `update_file_metadata` | admin | `PATCH /api/v2/files/{id}` |
 | `delete_file` | admin | `DELETE /api/v2/files/{id}` |
 | `get_users` | admin | `GET /api/v2/users` |

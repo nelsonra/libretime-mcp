@@ -1,6 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { register as registerSearchFiles } from './search_files.js'
-import { register as registerUploadFile } from './upload_file.js'
+import { register as registerUploadFile } from './upload_file_legacy.js'
 import { register as registerUpdateFileMetadata } from './update_file_metadata.js'
 import { register as registerDeleteFile } from './delete_file.js'
 
