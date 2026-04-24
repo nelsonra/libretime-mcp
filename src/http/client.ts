@@ -6,6 +6,7 @@
 import '../env.js'
 
 import { register as registerShows } from '../tools/shows/index.js'
+import { register as registerPrompts } from '../prompts/index.js'
 import { createHttpServer } from './server.js'
 
 createHttpServer({
@@ -13,5 +14,6 @@ createHttpServer({
   defaultPort: 3001,
   register: (server) => {
     registerShows(server)
+    registerPrompts(server)
   },
 })

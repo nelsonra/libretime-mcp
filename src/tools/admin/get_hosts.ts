@@ -5,12 +5,10 @@ import { toolText } from '../../tool-response.js'
 import { ShowHostSchema, UserSchema } from './types.js'
 
 export function register(server: McpServer) {
-  server.registerTool(
+  server.tool(
     'get_hosts',
-    {
-      description:
-        'Get all show-to-host assignments. Enriches each entry with user details so you can see which presenter hosts which show by name.',
-    },
+    'Get all show-to-host assignments. Enriches each entry with user details so you can see which presenter hosts which show by name.',
+    {},
     async () => {
       const [rawHosts, rawUsers] = await Promise.all([
         libreGet('/api/v2/show-hosts'),

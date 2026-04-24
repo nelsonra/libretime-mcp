@@ -155,8 +155,11 @@ Or use the built output (`node dist/stdio/client.js`) if you've run `npm run bui
 | Tool | Server | LibreTime Endpoint |
 |---|---|---|
 | `get_shows` | both | `GET /api/v2/shows` |
+| `get_show` | both | `GET /api/v2/shows/{id}` |
+| `get_show_instances` | both | `GET /api/v2/show-instances` |
 | `get_schedule` | both | `GET /api/v2/schedule` |
 | `get_stream_state` | both | `GET /api/v2/stream/state` |
+| `get_station_info` | both | `GET /api/v2/info` |
 | ~~`get_listener_counts`~~ | disabled | API returns full history (~120k records) with no server-side filtering |
 | `get_playout_history` | admin | `GET /api/v2/playout-history` + `/api/v2/files/{id}` |
 | `search_files` | admin | `GET /api/v2/files` |
@@ -165,12 +168,9 @@ Or use the built output (`node dist/stdio/client.js`) if you've run `npm run bui
 | `delete_file` | admin | `DELETE /api/v2/files/{id}` |
 | `get_users` | admin | `GET /api/v2/users` |
 | `get_hosts` | admin | `GET /api/v2/show-hosts` + `/api/v2/users` |
-
-## Planned Tools
-
-| Tool | Endpoint |
-|---|---|
-| `get_show` | `GET /api/v2/shows/{id}` |
-| `get_show_instances` | `GET /api/v2/show-instances` |
-| `create_show` | `POST /api/v2/shows` |
-| `get_station_info` | `GET /api/v2/info` (no auth needed) |
+| `create_show` | admin | `POST /api/v2/shows` |
+| `schedule_file` | admin | `POST /api/v2/schedule` |
+| `get_playlists` | admin | `GET /api/v2/playlists` |
+| `create_playlist` | admin | `POST /api/v2/playlists` |
+| `get_playlist_contents` | admin | `GET /api/v2/playlist-contents` |
+| `add_to_playlist` | admin | `POST /api/v2/playlist-contents` |

@@ -12,8 +12,11 @@ Tools are organised into subdirectories under `src/tools/` — one file per tool
 
 **Read-only (client & admin)**
 - `get_shows` — list all shows
+- `get_show` — get a single show by ID
+- `get_show_instances` — list scheduled show slots (filterable by show, date range)
 - `get_schedule` — broadcast schedule
 - `get_stream_state` — current on-air state
+- `get_station_info` — station name, timezone, and configuration
 
 **Analytics (admin)**
 - ~~`get_listener_counts`~~ — disabled (API returns full history with no filtering, ~120k records)
@@ -21,13 +24,32 @@ Tools are organised into subdirectories under `src/tools/` — one file per tool
 
 **Media library (admin)**
 - `search_files` — search your media library
-- `upload_file` — upload an audio file _(stdio only — reads from local filesystem)_
+- `upload_file` — upload an audio file via drag-and-drop UI (works in both stdio and HTTP modes — see [File Upload](#file-upload))
 - `update_file_metadata` — edit track metadata
 - `delete_file` — remove a file
 
+**Shows & scheduling (admin)**
+- `create_show` — create a new show
+- `schedule_file` — schedule an uploaded file into a show instance
+
+**Playlists (admin)**
+- `get_playlists` — list all playlists
+- `create_playlist` — create a new playlist
+- `get_playlist_contents` — list items in a playlist
+- `add_to_playlist` — add a file or stream to a playlist
+
 **Users (admin)**
-- `get_users` — list station users
-- `get_hosts` — list show hosts
+- `get_users` — list station users (pass `include_email: true` to include email addresses, omitted by default)
+- `get_hosts` — list show hosts with their show assignments
+
+## File Upload
+
+`upload_file` renders a drag-and-drop UI in the Claude chat window. It works the same way in both transport modes:
+
+- **HTTP mode** — the UI posts directly to the MCP server's `/upload` endpoint
+- **stdio mode** — the admin server spins up a lightweight sidecar HTTP server (default port `4000`) that the UI posts to. The MCP protocol itself continues over stdio; the upload is a side-channel.
+
+Both modes use the same upload token generated at startup, so there's no separate configuration needed. To change the sidecar port in stdio mode set `UPLOAD_PORT` in your environment.
 
 ## Option 1 — Claude Desktop (stdio)
 
@@ -50,12 +72,15 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
       "env": {
         "LIBRETIME_URL": "https://your-instance.example.com",
         "LIBRETIME_USER": "user",
-        "LIBRETIME_PASS": "pass"
+        "LIBRETIME_PASS": "pass",
+        "LIBRETIME_API_KEY": "your_libretime_api_key"
       }
     }
   }
 }
 ```
+
+`LIBRETIME_API_KEY` is the `general.api_key` value from your LibreTime `config.yml`. It is required for file uploads — omit it if you are using the read-only client.
 
 Use `libretime-mcp-client` instead of `libretime-mcp` for read-only access.
 
@@ -156,7 +181,15 @@ npm run build
 
 # Tests
 npm test
+
+# MCP Inspector — browse and call tools interactively
+npm run inspect:admin           # stdio admin server
+npm run inspect:client          # stdio read-only server
+npm run inspect:admin-http      # HTTP admin (start the server first, then run this)
+npm run inspect:client-http     # HTTP read-only (start the server first, then run this)
 ```
+
+The inspector opens a browser UI at `http://localhost:5173` where you can list tools, see their schemas, and call them with custom inputs.
 
 ## Servers
 
