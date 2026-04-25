@@ -82,7 +82,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 `LIBRETIME_API_KEY` is the `general.api_key` value from your LibreTime `config.yml`. It is required for file uploads — omit it if you are using the read-only client.
 
-Use `libretime-mcp-client` instead of `libretime-mcp` for read-only access.
+Use `libretime-mcp-client` instead of `libretime-mcp` for read-only access and ommit `LIBRETIME_API_KEY`.
 
 ### npx (no install)
 
@@ -95,7 +95,8 @@ Use `libretime-mcp-client` instead of `libretime-mcp` for read-only access.
       "env": {
         "LIBRETIME_URL": "https://your-instance.example.com",
         "LIBRETIME_USER": "user",
-        "LIBRETIME_PASS": "pass"
+        "LIBRETIME_PASS": "pass",
+        "LIBRETIME_API_KEY": "libretime-api-key"
       }
     }
   }
