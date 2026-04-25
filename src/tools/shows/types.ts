@@ -6,12 +6,12 @@ export const ShowSchema = z.object({
   description: z.string().nullable(),
   genre: z.string().nullable(),
   url: z.string().nullable(),
-  linked: z.boolean(),
-  linkable: z.boolean(),
-  auto_playlist_enabled: z.boolean(),
-  auto_playlist_repeat: z.boolean(),
-  override_intro_playlist: z.boolean(),
-  override_outro_playlist: z.boolean(),
+  linked: z.boolean().optional(),
+  linkable: z.boolean().optional(),
+  auto_playlist_enabled: z.boolean().optional(),
+  auto_playlist_repeat: z.boolean().optional(),
+  override_intro_playlist: z.boolean().optional(),
+  override_outro_playlist: z.boolean().optional(),
 }).passthrough()
 export type Show = z.infer<typeof ShowSchema>
 
